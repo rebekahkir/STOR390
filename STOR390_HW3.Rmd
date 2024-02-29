@@ -145,11 +145,10 @@ The response variable is currently a categorical variable with four levels.  Con
 
 ```{r}
 
-heart$heart_disease <- ifelse(heart$class == "present", "yes", "no")
-heart$heart_disease <- factor(heart$heart_disease, levels = c("no", "yes"))
+heart$cp_binary <- ifelse(heart$cp == "4", "yes", "no")
+heart$cp_binary <- factor(heart$cp_binary, levels = c("no", "yes"))
 
-str(heart)
-
+str(heart$cp_binary)
 
 ```
 
@@ -160,14 +159,11 @@ Train a classification tree on a 240 observation training subset (using the seed
 ```{r}
 set.seed(101)
 
-train <- sample(1:nrow(heart), 240)
+train=sample(1:nrow(heart), 240)
 
-heart.tree <- rpart(High ~. -Sales, data = carseats, method = "class")
-par(xpd = NA) # otherwise on some devices the text is clipped
-
-plot(car.tree)
-text(car.tree, pretty = 0)
-
+tree.heart = tree(heart$cp_binary~.-class, heart, subset=train)
+plot(tree.heart)
+text(tree.heart, pretty=0)
 
 ```
 
@@ -187,7 +183,8 @@ Above we have a fully grown (bushy) tree.  Now, cross validate it using the `cv.
 
 ```{r}
 
-
+cv.heart = cv.tree(tree.heart, FUN = prune.misclass)
+cv.heart
 ```
 
 
@@ -195,8 +192,9 @@ Above we have a fully grown (bushy) tree.  Now, cross validate it using the `cv.
 
 Discuss the trade-off in accuracy and interpretability in pruning the above tree. 
 
-*Student Input *
+*In pruning the tree you have to sacrifice some accuracy in order to understand how the tree is splitting up factors. Being able to interpret the tree is a crucial part of making sure that the tree can be generalized to other datasets and also check for anything out of the ordinary that might cause bias. It's important to balance accuracy and interpretability because both of them are important.*
 
 ## 
 
 Discuss the ways a decision tree could manifest algorithmic bias.  
+*If the classes in the training data are imbalanced and one class is significantly more prevalent than others, the decision tree may prioritize accuracy on the larger class at the expense of the smaller class, which can lead to biased predictions. especially if the testing data is not representative of the training data. The complexity of the decision tree itself can also manifest bias because highly complex tree may be prone to overfitting. Trying to use a model that is tailored too much to the training data that it can't be general will cause innaccurate and often bias predictions.*
